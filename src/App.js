@@ -1,13 +1,28 @@
 import logo from './logo.svg';
 import './App.css';
+import BoardComponent from './Board.js'
+import { useState, useRef, useEffect } from 'react';
+import io from 'socket.io-client';
+
+const socket = io(); // Connects to socket connection
 
 function App() {
+  const state = useState([]);
+  
+  useEffect(() => {
+    // Listening for a chat event emitted by the server. If received, we
+    // run the code in the function that is passed in as the second arg
+    socket.on('board', (data) => {
+      console.log('Chat event received!');
+      console.log(data);
+    });
+  }, []);
+  
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          Charles Crider
         </p>
         <a
           className="App-link"
@@ -15,8 +30,10 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
+        
+        
           Learn React
-        </a>
+        </a><BoardComponent />
       </header>
     </div>
   );
