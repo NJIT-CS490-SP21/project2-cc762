@@ -6,24 +6,16 @@ import io from 'socket.io-client';
 
 const socket = io(); // Connects to socket connection
 
-function BoardComponent(){
+function BoardComponent(props){
     const title = "Tic Tac Toe"
     const [board, setBoard] = useState(['-','-','-','-','-','-','-','-','-']);
-    const [turn, setTurn] = useState(['X'])
-    const [messages, setMessages] = useState([]); // State variable, list of messages
     const inputRef = useRef(null); // Reference to <input> element
     
-    function updateBoard(num, turn) {
+    function updateBoard(num, usr) {
         var b = [...board];
-        b[num] = turn;
+        b[num] = usr()[0].xo;//theres a 0 here cause we're using the wacky use state syntax and getUsr returns an object in an array
         
-        if(turn == 'X')
-        {
-            setTurn(turn => 'O');
-        }
-        else{
-            setTurn(turn => 'X');
-        }
+        props.swapTurn(usr);
         
         setBoard(board => b);
     }
@@ -34,20 +26,20 @@ function BoardComponent(){
         socket.on('board', (data) => {
           console.log('Updating Board In Board');
           console.log(data);
-          updateBoard(data.num)
+          updateBoard(data.num, data.usr)
         });
     }, []);
   
-    function onClickButton(num) {
+    function onClickButton(num, usr, value) {
         if (inputRef != null) {
-            updateBoard(num)
-          socket.emit('board', { num: num });
+            updateBoard(num, usr)
+          socket.emit('board', { num: num, usr: usr});
         }
     }
     
     return (
         <div class="board">
-        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index}/>)}
+        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index} usr={props.getUsr}/>)}
         </div>
     );
 }
@@ -55,7 +47,7 @@ function BoardComponent(){
 function Cell(props)
 {
     return (
-        <div onClick={() => props.onClickButton(props.num)} class="box">{props.value}</div>
+        <div onClick={() => props.onClickButton(props.num, props.usr)} class="box">{props.value}</div>
         );
 }
 

@@ -8,32 +8,33 @@ const socket = io(); // Connects to socket connection
 
 function App() {
   const state = useState([]);
+  const usr = useState({name: "", xo: "X"})
+  const [players, setPlayers] = useState([]);
   
   useEffect(() => {
     // Listening for a chat event emitted by the server. If received, we
     // run the code in the function that is passed in as the second arg
     socket.on('board', (data) => {
-      console.log('Chat event received!');
+      console.log('Cell click recieved');
       console.log(data);
     });
   }, []);
+  
+  function getUsr(){
+    console.log("Getting usr");
+    return usr;
+  }
+  
+  function swapTurn(){
+    console.log("not implemented");
+  }
   
   return (
     <div className="App">
       <header className="App-header">
         <p>
           Charles Crider
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-        
-        
-          Learn React
-        </a><BoardComponent />
+        </p><BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
       </header>
     </div>
   );
