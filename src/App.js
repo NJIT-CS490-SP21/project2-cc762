@@ -39,9 +39,10 @@ function App() {
     <div className="App">
       <header className="App-header">
         <p>
-          Charles Crider
-          <LoginComponent addUsr={addUsr}/>
-        </p><BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
+          Tic Tac Toe
+        </p>
+        <LoginComponent addUsr={addUsr}/>
+        <BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
       </header>
     </div>
   );

@@ -20,10 +20,10 @@ def index(filename):
     return send_from_directory('./build', filename)
 
 # When a client connects from this Socket connection, this function is run
-@socketio.on('logIn')
+@socketio.on('login')
 def on_connect(data):
     print('User connected!')
-    socketio.emit('logIn', data, broadcast=True, include_self=False)
+    socketio.emit('login', data, broadcast=True, include_self=False)
 
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
