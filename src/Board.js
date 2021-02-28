@@ -21,14 +21,12 @@ function BoardComponent(props){
     }
     
     useEffect(() => {
-        // Listening for a chat event emitted by the server. If received, we
-        // run the code in the function that is passed in as the second arg
         socket.on('board', (data) => {
-          console.log('Updating Board In Board');
+          console.log('Socked recieved board update');
           console.log(data);
           updateBoard(data.num, data.usr)
         });
-    }, []);
+    });
   
     function onClickButton(num, usr, value) {
         if (inputRef != null) {
