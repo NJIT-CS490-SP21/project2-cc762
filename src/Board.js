@@ -27,12 +27,9 @@ function BoardComponent(props){
           updateBoard(data.num, data.usr)
         });
     });
-  
+    
     function onClickButton(num, usr) {
-        if (inputRef != null) {
-            updateBoard(num, usr)
-          socket.emit('board', { num: num, usr: usr});
-        }
+        socket.emit('board', { num: num, usr: usr});
     }
     
     //key is set to get console to stop complaining
@@ -42,12 +39,11 @@ function BoardComponent(props){
         </div>
     );
 }
-
-function Cell(props)
-{
+    
+function Cell(props){
     return (
-        <div onClick={() => props.onClickButton(props.num, props.getUsr())} class="box">{props.value}</div>
-        );
+    <div onClick={() => props.onClickButton(props.num, props.getUsr())} class="box">{props.value}</div>
+    );
 }
 
 export default BoardComponent;

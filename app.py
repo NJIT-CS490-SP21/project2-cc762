@@ -14,15 +14,36 @@ socketio = SocketIO(
     manage_session=False
 )
 
+#Segment for handling the users
+users = []
+
+    
+def addUser(user):
+    if(len(users) == 0):
+        tile = "X"
+    elif(len(users) == 1):
+        tile = "O"
+    else:
+        tile = "Spectator"
+    newUser = {"name": user, "xo": tile}
+    users.append(newUser)
+    return newUser
+
 @app.route('/', defaults={"filename": "index.html"})
 @app.route('/<path:filename>')
 def index(filename):
     return send_from_directory('./build', filename)
 
+@socketio.on("requestUserList")
+def on_requestUserList():
+    socketio.emit("requestUserList", users, broadcast=False, include_self=False)#note the false broadcast, because we dont want everyone to update anytime someone asks for the list
+
 # When a client connects from this Socket connection, this function is run
 @socketio.on('login')
 def on_connect(data):
     print('User connected!')
+    if "usr" in data.keys():#proper error handilng for empty/misformed packets not implemented
+        addUser(data["usr"])
     socketio.emit('login', data, broadcast=True, include_self=False)
 
 # When a client disconnects from this Socket connection, this function is run

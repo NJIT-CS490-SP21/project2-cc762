@@ -1,7 +1,7 @@
-import logo from './logo.svg';
 import './App.css';
 import BoardComponent from './Board.js'
 import LoginComponent from './Login.js'
+import UserListComponent from './Users.js'
 import { useState, useRef, useEffect } from 'react';
 import io from 'socket.io-client';
 
@@ -9,17 +9,29 @@ const socket = io(); // Connects to socket connection
 
 function App() {
   const state = useState([]);
+  const [allUsrs, setAllUsrs] = useState([]);
   const [usr, setUsr] = useState([{name: "", xo: ""}])
-  const [players, setPlayers] = useState([]);
   
+  //Listener for login
   useEffect(() => {
-    // Listening for a chat event emitted by the server. If received, we
-    // run the code in the function that is passed in as the second arg
-    socket.on('board', (data) => {
-      console.log('Cell click recieved');
-      console.log(data);
-    });
-  }, []);
+      socket.on('login', (data) => {
+        console.log('Socked recieved other user connect');
+        console.log(data);
+        getAllUsr();
+      });
+  });
+  
+  //Listener for app.py returning the userlist
+  useEffect(() => {
+      socket.on('requestUserList', (data) => {
+        console.log('Socked recieved list of users');
+        setAllUsrs(allUsrs => data)
+      });
+  });
+    
+  function getAllUsr(){
+    socket.emit('requestUserList');
+  }
   
   function getUsr(){
     console.log("Getting usr");
@@ -31,14 +43,9 @@ function App() {
     console.log("not implemented");
   }
   
-  function addUsr(usr, set=false){
-    console.log("adding usr: " + usr)
-    var p = [...players, {name: usr, xo: "X"}];
-    setPlayers(players => p);
-    if(set)
-    {
-      setUsr(usr => [{name: usr, xo: "X"}]);
-    }
+  function addUsr(usr){
+    var tile = "x";
+    setUsr(usr => [{name: usr, xo: tile}]);
   }
   
   return (
@@ -47,7 +54,7 @@ function App() {
         <p>
           Tic Tac Toe
         </p>
-        <ul>{players.map((usr, index) => <li key={index}>{usr.name}: {usr.xo}</li>)}</ul>
+        <UserListComponent allUsrs={allUsrs}/>
         <LoginComponent addUsr={addUsr}/>
         <BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
       </header>
