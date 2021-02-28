@@ -12,7 +12,7 @@ function LoginComponent(props){
     function login(){
         if (inputRef != null) {//
             var usr = loginRef.current.value;//Since the ref was assigned to text input we can just ask for the value here
-            props.addUsr(usr)//call the addUsr function in App.js
+            props.addUsr(usr, true)//call the addUsr function in App.js
             socket.emit('login', { usr: usr });
         }
     }

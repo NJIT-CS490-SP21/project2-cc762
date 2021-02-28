@@ -13,7 +13,7 @@ function BoardComponent(props){
     
     function updateBoard(num, usr) {
         var b = [...board];
-        b[num] = usr()[0].xo;//theres a 0 here cause we're using the wacky use state syntax and getUsr returns an object in an array
+        b[num] = usr.xo;//theres a 0 here cause we're using the wacky use state syntax and getUsr returns an object in an array
         
         props.swapTurn(usr);
         
@@ -28,16 +28,17 @@ function BoardComponent(props){
         });
     });
   
-    function onClickButton(num, usr, value) {
+    function onClickButton(num, usr) {
         if (inputRef != null) {
             updateBoard(num, usr)
           socket.emit('board', { num: num, usr: usr});
         }
     }
     
+    //key is set to get console to stop complaining
     return (
         <div class="board">
-        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index} usr={props.getUsr}/>)}
+        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
         </div>
     );
 }
@@ -45,7 +46,7 @@ function BoardComponent(props){
 function Cell(props)
 {
     return (
-        <div onClick={() => props.onClickButton(props.num, props.usr)} class="box">{props.value}</div>
+        <div onClick={() => props.onClickButton(props.num, props.getUsr())} class="box">{props.value}</div>
         );
 }
 

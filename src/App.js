@@ -9,7 +9,7 @@ const socket = io(); // Connects to socket connection
 
 function App() {
   const state = useState([]);
-  const usr = useState({name: "", xo: ""})
+  const [usr, setUsr] = useState([{name: "", xo: ""}])
   const [players, setPlayers] = useState([]);
   
   useEffect(() => {
@@ -23,16 +23,22 @@ function App() {
   
   function getUsr(){
     console.log("Getting usr");
-    return usr;
+    console.log(usr);
+    return usr[0];
   }
   
   function swapTurn(){
     console.log("not implemented");
   }
   
-  function addUsr(data){
-    console.log("not implemented");
-    console.log(data);
+  function addUsr(usr, set=false){
+    console.log("adding usr: " + usr)
+    var p = [...players, {name: usr, xo: "X"}];
+    setPlayers(players => p);
+    if(set)
+    {
+      setUsr(usr => [{name: usr, xo: "X"}]);
+    }
   }
   
   return (
@@ -41,6 +47,7 @@ function App() {
         <p>
           Tic Tac Toe
         </p>
+        <ul>{players.map((usr, index) => <li key={index}>{usr.name}: {usr.xo}</li>)}</ul>
         <LoginComponent addUsr={addUsr}/>
         <BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
       </header>
