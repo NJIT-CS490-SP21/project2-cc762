@@ -28,6 +28,11 @@ function App() {
       });
   });
   
+  function resetUsers(){
+    setAllUsrs(allUsrs => [])
+    setUsr(usr => [{name: "", xo: ""}])
+  }
+  
   function getAllUsr(){
     socket.emit('requestUserList');
   }
@@ -53,7 +58,7 @@ function App() {
         </p>
         <UserListComponent allUsrs={allUsrs}/>
         <LoginComponent addUsr={addUsr}/>
-        <BoardComponent usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
+        <BoardComponent resetUsers={resetUsers} usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
       </header>
     </div>
   );

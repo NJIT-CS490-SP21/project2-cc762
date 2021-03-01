@@ -16,7 +16,8 @@ socketio = SocketIO(
 
 #Segment for handling the users
 users = []
-
+#server side turn var
+turn = 0;
     
 def addUser(user):
     if(len(users) == 0):
@@ -60,7 +61,18 @@ def on_connect():
 # When a client emits the event 'board' to the server, this function is run
 @socketio.on('board')
 def on_chat(data):
+    data["turn"] = turn;
     socketio.emit('board', data, broadcast=True, include_self=True)
+
+#Reset board
+@socketio.on('reset')
+def on_reset():
+    print("Resetting Game")
+    global users 
+    users = []
+    global turn
+    turn = 0
+    socketio.emit('reset', broadcast=True, include_self=True)
 
 # Note that we don't call app.run anymore. We call socketio.run with app arg
 socketio.run(
