@@ -18,7 +18,31 @@ socketio = SocketIO(
 users = []
 #server side turn var
 turn = 0;
+board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
+
+def checkWin():
+    global board
+    global turn
     
+    lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+    ];
+    for i in lines:
+        a = i[0];
+        b = i[1];
+        c = i[2];
+        if board[a] in "XO" and board[b] in "XO" and board[c] in "XO":
+            return board[a];
+    return False;
+
+
 def addUser(user):
     if(len(users) == 0):
         tile = "X"
@@ -61,8 +85,19 @@ def on_connect():
 # When a client emits the event 'board' to the server, this function is run
 @socketio.on('board')
 def on_chat(data):
-    data["turn"] = turn;
-    socketio.emit('board', data, broadcast=True, include_self=True)
+    global turn
+    turn += 1
+    global board
+    board[data["num"]] = data["usr"]["xo"]
+    print(board)
+    win = checkWin()
+    if win != False:
+        socketio.emit('win', win, broadcast=True, include_self=True)
+    if turn > 9:
+        socketio.emit('draw', broadcast=True, include_self=True)
+    else:
+        data["turn"] = turn;
+        socketio.emit('board', data, broadcast=True, include_self=True)
 
 #Reset board
 @socketio.on('reset')

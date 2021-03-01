@@ -10,7 +10,7 @@ function BoardComponent(props){
     const title = "Tic Tac Toe"
     const [board, setBoard] = useState(['-','-','-','-','-','-','-','-','-']);
     const [turn, setTurn] = useState(0);
-    
+    const [win, setWin] = useState("Playing")
     function updateBoard(num, usr) {
         var b = [...board];
         b[num] = usr.xo;//theres a 0 here cause we're using the wacky use state syntax and getUsr returns an object in an array
@@ -28,9 +28,7 @@ function BoardComponent(props){
           console.log(turn);
           setTurn(turn => data.turn);
         });
-    });
-    
-    useEffect(() => {
+        
         socket.on('reset', (data) => {
           console.log('Resetting Game');
           setTurn(turn => 0);
@@ -40,16 +38,23 @@ function BoardComponent(props){
     });
     
     function onClickButton(num, usr) {
-        if(usr["xo"] === "X" || usr["xo"] === "O")
-        {
-            socket.emit('board', { num: num, usr: usr});
-        }
+        //Check if the user is allowed to play
+        //Check if the space is empty
+        //Check if the its the user's turn
+        if(
+            (usr["xo"] === "X" || usr["xo"] === "O") &&
+            (board[num] === "-") &&
+            ((usr["xo"] === "X" && turn % 2 == 0) || (usr["xo"] === "O" && turn % 2 == 1))
+            ){
+                socket.emit('board', { num: num, usr: usr});
+            }
     }
     
     //key is set to get console to stop complaining
     return (
         <div>
         <ResetComponent/>
+        <p>{win}</p>
         <p>Turn: {turn}</p>
         <div class="board">
         {board.map((cell, index) => <Cell onClickFunc={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
