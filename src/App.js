@@ -14,23 +14,24 @@ function App() {
   
   //Listener for login
   useEffect(() => {
+    
       socket.on('updateUsers', (data) => {
         console.log('Socked recieved other user connect');
         getAllUsr();
       });
-  });
-  
-  //Listener for app.py returning the userlist
-  useEffect(() => {
+      
+      //Listener for app.py returning the userlist
       socket.on('requestUserList', (data) => {
         console.log('Socked recieved list of users');
         setAllUsrs(allUsrs => data)
       });
-  });
+      getAllUsr()
+  }, []);
   
   function resetUsers(){
-    setAllUsrs(allUsrs => [])
-    setUsr(usr => [{name: "", xo: ""}])
+    console.log("Resetting users")
+    setAllUsrs([])
+    setUsr([{name: "", xo: ""}])
   }
   
   function getAllUsr(){
@@ -42,23 +43,27 @@ function App() {
     return usr[0];
   }
   
-  function swapTurn(){
-    console.log("not implemented");
+  function addUsr(data){
+    setUsr([{name: data["name"], xo: data["xo"]}]);
   }
   
-  function addUsr(data){
-    setUsr(usr => [{name: data["name"], xo: data["xo"]}]);
+  function isLoggedIn(){
+    console.log("Logged in = " + !(usr[0]["name"] === ""))
+    return (!(usr[0]["name"] === ""));
   }
   
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          Tic Tac Toe
-        </p>
-        <UserListComponent allUsrs={allUsrs}/>
-        <LoginComponent addUsr={addUsr}/>
-        <BoardComponent resetUsers={resetUsers} usr={usr} getUsr={getUsr} swapTurn={swapTurn}/>
+        <h1>Tic Tac Toe</h1>
+        <div class="pageGrid">
+          <div><BoardComponent show={isLoggedIn} resetUsers={resetUsers} usr={usr} getUsr={getUsr}/></div>
+          <div class="stacked">
+            {isLoggedIn() && <div>You are: {usr[0]["name"]}, and are {usr[0]["xo"]}</div>}
+            <LoginComponent addUsr={addUsr}/>
+            <UserListComponent allUsrs={allUsrs}/>
+          </div>
+        </div>
       </header>
     </div>
   );

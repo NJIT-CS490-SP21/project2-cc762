@@ -38,7 +38,7 @@ def checkWin():
         a = i[0];
         b = i[1];
         c = i[2];
-        if board[a] in "XO" and board[b] in "XO" and board[c] in "XO":
+        if board[a] ==  board[b] and board[b] == board[c] and board[c] in "XO":
             return board[a];
     return False;
 
@@ -61,6 +61,7 @@ def index(filename):
 
 @socketio.on("requestUserList")
 def on_requestUserList():
+    print("User List Requested")
     socketio.emit("requestUserList", users, broadcast=False, include_self=False)#note the false broadcast, because we dont want everyone to update anytime someone asks for the list
 
 # When a client connects from this Socket connection, this function is run
@@ -91,18 +92,22 @@ def on_chat(data):
     board[data["num"]] = data["usr"]["xo"]
     print(board)
     win = checkWin()
+    print(win)
     if win != False:
         socketio.emit('win', win, broadcast=True, include_self=True)
-    if turn > 9:
-        socketio.emit('draw', broadcast=True, include_self=True)
-    else:
-        data["turn"] = turn;
-        socketio.emit('board', data, broadcast=True, include_self=True)
+    if turn >= 9:
+        socketio.emit('win', "Draw", broadcast=True, include_self=True)
+    data["turn"] = turn;
+    print("Emmitting Board Change")
+    print(data)
+    socketio.emit('board', data, broadcast=True, include_self=True)
 
 #Reset board
 @socketio.on('reset')
 def on_reset():
     print("Resetting Game")
+    global board
+    board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
     global users 
     users = []
     global turn

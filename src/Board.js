@@ -11,31 +11,38 @@ function BoardComponent(props){
     const [board, setBoard] = useState(['-','-','-','-','-','-','-','-','-']);
     const [turn, setTurn] = useState(0);
     const [win, setWin] = useState("Playing")
+    
     function updateBoard(num, usr) {
-        var b = [...board];
-        b[num] = usr.xo;//theres a 0 here cause we're using the wacky use state syntax and getUsr returns an object in an array
+        console.log(""+ board);
+        console.log("Updating board cell: " + num + usr["xo"])
         
-        props.swapTurn(usr);
-        
-        setBoard(board => b);
+        setBoard(prevBoard => {
+            const b = [ ...prevBoard ];
+            b[num] = usr["xo"];
+            return b;
+        });
     }
     
     useEffect(() => {
         socket.on('board', (data) => {
-          console.log('Socked recieved board update');
-          console.log(data);
-          updateBoard(data.num, data.usr);
-          console.log(turn);
-          setTurn(turn => data.turn);
+          console.log('Socked recieved board update: ' + data + " " + turn);
+          updateBoard(data["num"], data["usr"]);
+          setTurn(data.turn);
+        });
+        
+        socket.on('win', (data) => {
+           setWin("Winner: " + data);
         });
         
         socket.on('reset', (data) => {
           console.log('Resetting Game');
-          setTurn(turn => 0);
-          setBoard(board => ['-','-','-','-','-','-','-','-','-']);
+          setBoard(['-','-','-','-','-','-','-','-','-']);
+          setTurn(0);
           props.resetUsers();
+          setWin("Playing");
+          console.log("Resetting Board to: " + board);
         });
-    });
+    }, []);
     
     function onClickButton(num, usr) {
         //Check if the user is allowed to play
@@ -44,22 +51,31 @@ function BoardComponent(props){
         if(
             (usr["xo"] === "X" || usr["xo"] === "O") &&
             (board[num] === "-") &&
-            ((usr["xo"] === "X" && turn % 2 == 0) || (usr["xo"] === "O" && turn % 2 == 1))
+            ((usr["xo"] === "X" && turn % 2 == 0) || (usr["xo"] === "O" && turn % 2 == 1) &&
+            win ==="Playing")
             ){
+                console.log("Changing board cell: " + num);
                 socket.emit('board', { num: num, usr: usr});
             }
     }
     
     //key is set to get console to stop complaining
-    return (
-        <div>
-        <ResetComponent/>
-        <p>{win}</p>
-        <p>Turn: {turn}</p>
-        <div class="board">
-        {board.map((cell, index) => <Cell onClickFunc={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
-        </div></div>
-    );
+    //if(props.show())
+    if(true)
+    {
+        return (
+            <div>
+            <ResetComponent/>
+            {win !== "Playing" && <p>{win}</p>}
+            <p>Turn: {turn}</p>
+            <div class="board">
+            {board.map((cell, index) => <Cell onClickFunc={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
+            </div></div>
+        );
+    }
+    else{
+        return <div></div>;
+    }
 }
     
 function Cell(props){
@@ -69,6 +85,8 @@ function Cell(props){
 }
 
 function ResetComponent(){
-    return <div onClick={() =>{socket.emit("reset")}}>Reset</div>
+    return (
+        <div onClick={() =>{socket.emit("reset")}}>Reset</div>
+    );
 }
 export default BoardComponent;
