@@ -35,14 +35,14 @@ function BoardComponent(props){
     //key is set to get console to stop complaining
     return (
         <div class="board">
-        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
+        {board.map((cell, index) => <Cell onClickFunc={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
         </div>
     );
 }
     
 function Cell(props){
     return (
-    <div onClick={() => props.onClickButton(props.num, props.getUsr())} class="box">{props.value}</div>
+    <div onClick={() => props.onClickFunc(props.num, props.getUsr())} class="box">{props.value}</div>
     );
 }
 

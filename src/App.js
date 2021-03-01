@@ -14,9 +14,8 @@ function App() {
   
   //Listener for login
   useEffect(() => {
-      socket.on('login', (data) => {
+      socket.on('updateUsers', (data) => {
         console.log('Socked recieved other user connect');
-        console.log(data);
         getAllUsr();
       });
   });
@@ -28,14 +27,13 @@ function App() {
         setAllUsrs(allUsrs => data)
       });
   });
-    
+  
   function getAllUsr(){
     socket.emit('requestUserList');
   }
   
   function getUsr(){
     console.log("Getting usr");
-    console.log(usr);
     return usr[0];
   }
   
@@ -43,9 +41,8 @@ function App() {
     console.log("not implemented");
   }
   
-  function addUsr(usr){
-    var tile = "x";
-    setUsr(usr => [{name: usr, xo: tile}]);
+  function addUsr(data){
+    setUsr(usr => [{name: data["name"], xo: data["xo"]}]);
   }
   
   return (

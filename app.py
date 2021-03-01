@@ -40,21 +40,27 @@ def on_requestUserList():
 
 # When a client connects from this Socket connection, this function is run
 @socketio.on('login')
-def on_connect(data):
-    print('User connected!')
+def on_login(data):
+    print('User login!')
     if "usr" in data.keys():#proper error handilng for empty/misformed packets not implemented
-        addUser(data["usr"])
-    socketio.emit('login', data, broadcast=True, include_self=False)
-
+        user = addUser(data["usr"])
+    print(data["id"])
+    socketio.emit('addUserCallback', user, to=data["id"], broadcast=False, include_self=True)
+    socketio.emit('updateUsers', data, broadcast=True, include_self=False)#Tells all instances a new user has been added
+    
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
 def on_disconnect():
     print('User disconnected!')
+    
+@socketio.on('connect')
+def on_connect():
+    print('User connected!')
 
 # When a client emits the event 'board' to the server, this function is run
 @socketio.on('board')
 def on_chat(data):
-    socketio.emit('board', data, broadcast=True, include_self=False)
+    socketio.emit('board', data, broadcast=True, include_self=True)
 
 # Note that we don't call app.run anymore. We call socketio.run with app arg
 socketio.run(
