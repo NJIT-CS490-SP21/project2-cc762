@@ -16,7 +16,7 @@
 *Don't do the Heroku step for assignments, you only need to deploy for Project 2*
 1. Create a Heroku app: `heroku create --buildpack heroku/python`
 2. Add nodejs buildpack: `heroku buildpacks:add --index 1 heroku/nodejs`
-3. Push to Heroku: `git push heroku main`
+3. Push to Heroku: `git push heroku milestone_1`
 
 ## New Features:
 1. I would like to swap board storage to entierly server side, as it is more secure and less buggy(state cause a bug that took 2 hours and made my project late). This would be done almost exactly as I did the request for users(which are curently stored server side)
