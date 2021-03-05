@@ -14,29 +14,105 @@ socketio = SocketIO(
     manage_session=False
 )
 
+#Segment for handling the users
+users = []
+#server side turn var
+turn = 0;
+board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
+
+def checkWin():
+    global board
+    global turn
+    
+    lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+    ];
+    for i in lines:
+        a = i[0];
+        b = i[1];
+        c = i[2];
+        if board[a] ==  board[b] and board[b] == board[c] and board[c] in "XO":
+            return board[a];
+    return False;
+
+
+def addUser(user):
+    if(len(users) == 0):
+        tile = "X"
+    elif(len(users) == 1):
+        tile = "O"
+    else:
+        tile = "Spectator"
+    newUser = {"name": user, "xo": tile}
+    users.append(newUser)
+    return newUser
+
 @app.route('/', defaults={"filename": "index.html"})
 @app.route('/<path:filename>')
 def index(filename):
     return send_from_directory('./build', filename)
 
-# When a client connects from this Socket connection, this function is run
-@socketio.on('connect')
-def on_connect():
-    print('User connected!')
+@socketio.on("requestUserList")
+def on_requestUserList():
+    print("User List Requested")
+    socketio.emit("requestUserList", users, broadcast=False, include_self=False)#note the false broadcast, because we dont want everyone to update anytime someone asks for the list
 
+# When a client connects from this Socket connection, this function is run
+@socketio.on('login')
+def on_login(data):
+    print('User login!')
+    if "usr" in data.keys():#proper error handilng for empty/misformed packets not implemented
+        user = addUser(data["usr"])
+    print(data["id"])
+    socketio.emit('addUserCallback', user, to=data["id"], broadcast=False, include_self=True)
+    socketio.emit('updateUsers', data, broadcast=True, include_self=False)#Tells all instances a new user has been added
+    
 # When a client disconnects from this Socket connection, this function is run
 @socketio.on('disconnect')
 def on_disconnect():
     print('User disconnected!')
+    
+@socketio.on('connect')
+def on_connect():
+    print('User connected!')
 
-# When a client emits the event 'chat' to the server, this function is run
-# 'chat' is a custom event name that we just decided
+# When a client emits the event 'board' to the server, this function is run
 @socketio.on('board')
-def on_chat(data): # data is whatever arg you pass in your emit call on client
-    print(str(data))
-    # This emits the 'chat' event from the server to all clients except for
-    # the client that emmitted the event that triggered this function
-    socketio.emit('board',  data, broadcast=True, include_self=False)
+def on_chat(data):
+    global turn
+    turn += 1
+    global board
+    board[data["num"]] = data["usr"]["xo"]
+    print(board)
+    win = checkWin()
+    print(win)
+    if win != False:
+        socketio.emit('win', win, broadcast=True, include_self=True)
+    if turn >= 9:
+        socketio.emit('win', "Draw", broadcast=True, include_self=True)
+    data["turn"] = turn;
+    print("Emmitting Board Change")
+    print(data)
+    socketio.emit('board', data, broadcast=True, include_self=True)
+
+#Reset board
+@socketio.on('reset')
+def on_reset():
+    print("Resetting Game")
+    global board
+    board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
+    global users 
+    users = []
+    global turn
+    turn = 0
+    socketio.emit('reset', broadcast=True, include_self=True)
 
 # Note that we don't call app.run anymore. We call socketio.run with app arg
 socketio.run(

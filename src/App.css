@@ -1,16 +1,29 @@
-.App {
+.pageGrid {
+  display: grid; /* Enables CSS Grid */ 
+	grid-template-columns: 1fr 1fr;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.stacked {
+  width: 300px; /* Total horizontal dimensions */
+	height: 500px; /* just a bit taller than board.css*/
+	margin-left:auto; 
+  margin-right:auto;
+  grid-template-rows: 1fr 1fr 1fr;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+table {
+  width: 100%; /*fits the table to the "stacked" div*/
+  border: 1px solid black;
+}
+
+.boxContainer {
+  width: 300px; /* Total horizontal dimensions */
+	height: 300px; /* Total vertical dimensions */
+}
+
+.App {
+  text-align: center;
 }
 
 .App-header {
@@ -26,13 +39,4 @@
 
 .App-link {
   color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

@@ -6,57 +6,87 @@ import io from 'socket.io-client';
 
 const socket = io(); // Connects to socket connection
 
-function BoardComponent(){
+function BoardComponent(props){
     const title = "Tic Tac Toe"
     const [board, setBoard] = useState(['-','-','-','-','-','-','-','-','-']);
-    const [turn, setTurn] = useState(['X'])
-    const [messages, setMessages] = useState([]); // State variable, list of messages
-    const inputRef = useRef(null); // Reference to <input> element
+    const [turn, setTurn] = useState(0);
+    const [win, setWin] = useState("Playing")
     
-    function updateBoard(num, turn) {
-        var b = [...board];
-        b[num] = turn;
+    function updateBoard(num, usr) {
+        console.log(""+ board);
+        console.log("Updating board cell: " + num + usr["xo"])
         
-        if(turn == 'X')
-        {
-            setTurn(turn => 'O');
-        }
-        else{
-            setTurn(turn => 'X');
-        }
-        
-        setBoard(board => b);
+        setBoard(prevBoard => {
+            const b = [ ...prevBoard ];
+            b[num] = usr["xo"];
+            return b;
+        });
     }
     
     useEffect(() => {
-        // Listening for a chat event emitted by the server. If received, we
-        // run the code in the function that is passed in as the second arg
         socket.on('board', (data) => {
-          console.log('Updating Board In Board');
-          console.log(data);
-          updateBoard(data.num)
+          console.log('Socked recieved board update: ' + data + " " + turn);
+          updateBoard(data["num"], data["usr"]);
+          setTurn(data.turn);
+        });
+        
+        socket.on('win', (data) => {
+           setWin("Winner: " + data);
+        });
+        
+        socket.on('reset', (data) => {
+          console.log('Resetting Game');
+          setBoard(['-','-','-','-','-','-','-','-','-']);
+          setTurn(0);
+          props.resetUsers();
+          setWin("Playing");
+          console.log("Resetting Board to: " + board);
         });
     }, []);
-  
-    function onClickButton(num) {
-        if (inputRef != null) {
-            updateBoard(num)
-          socket.emit('board', { num: num });
-        }
+    
+    function onClickButton(num, usr) {
+        //Check if the user is allowed to play
+        //Check if the space is empty
+        //Check if the its the user's turn
+        if(
+            (usr["xo"] === "X" || usr["xo"] === "O") &&
+            (board[num] === "-") &&
+            ((usr["xo"] === "X" && turn % 2 == 0) || (usr["xo"] === "O" && turn % 2 == 1) &&
+            win ==="Playing")
+            ){
+                console.log("Changing board cell: " + num);
+                socket.emit('board', { num: num, usr: usr});
+            }
     }
     
+    //key is set to get console to stop complaining
+    //if(props.show())
+    if(true)
+    {
+        return (
+            <div>
+            <ResetComponent/>
+            {win !== "Playing" && <p>{win}</p>}
+            <p>Turn: {turn}</p>
+            <div class="board">
+            {board.map((cell, index) => <Cell onClickFunc={onClickButton} value={cell} num={index} key={index} getUsr={props.getUsr}/>)}
+            </div></div>
+        );
+    }
+    else{
+        return <div></div>;
+    }
+}
+    
+function Cell(props){
     return (
-        <div class="board">
-        {board.map((cell, index) => <Cell onClickButton={onClickButton} value={cell} num={index}/>)}
-        </div>
+    <div onClick={() => props.onClickFunc(props.num, props.getUsr())} class="box">{props.value}</div>
     );
 }
 
-function Cell(props)
-{
+function ResetComponent(){
     return (
-        <div onClick={() => props.onClickButton(props.num)} class="box">{props.value}</div>
-        );
+        <div onClick={() =>{socket.emit("reset")}}>Reset</div>
+    );
 }
-
 export default BoardComponent;
