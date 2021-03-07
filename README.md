@@ -1,8 +1,9 @@
 # Flask and create-react-app
  
-## Requirements
+## Local Install:
 1. `npm install`
 2. `pip install -r requirements.txt`
+3. `Set environment variable DATABASE_URL to your database`
 
 ## Setup
 1. Run `echo "DANGEROUSLY_DISABLE_HOST_CHECK=true" > .env.development.local` in the project directory
@@ -13,7 +14,6 @@
 3. Preview web page in browser '/'
 
 ## Deploy to Heroku
-*Don't do the Heroku step for assignments, you only need to deploy for Project 2*
 1. Create a Heroku app: `heroku create --buildpack heroku/python`
 2. Add nodejs buildpack: `heroku buildpacks:add --index 1 heroku/nodejs`
 3. Push to Heroku: `git push heroku milestone_1`
@@ -30,4 +30,4 @@ While I did not solve this myself at least I have a better understanding of stat
 2. I could not get the login socket to emit to only a specific client, despite turning 'broadcast' to 'false' and 'include_self' to true.
 After searching the documentation I found that the best way to do this is using rooms. Notably a socket will join a room to its unique id automaticall.
 I passed the 'socket.id' along in the data to the server and had the login signal send specifically to that ID.
-3. I am unable to 'from models import Player' in the body of my app.py, as due to some weird interaction with flask db doesn't properly set up before models tries to access it. All functions using the player model now have 'from models import Player' at the top as a temporary fix until I can find a better one
+3. I am unable to `from models import Player` in the body of my app.py, as due to some weird interaction with flask db doesn't properly set up before models tries to access it. All functions using the player model now have `from models import Player` at the top as a temporary fix until I can find a better one

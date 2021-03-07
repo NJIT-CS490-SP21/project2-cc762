@@ -75,6 +75,8 @@ def addUser(user):
     if(Player.query.filter_by(username=user).first() == None):
         db.session.add(Player(username=user, points=100, wins=0, losses=0))
         db.session.commit()
+    leader = getLeaderBoard()
+    socketio.emit('leaderboard', leader, broadcast=True, include_self=True)
     return newUser
 
 def getLeaderBoard():
