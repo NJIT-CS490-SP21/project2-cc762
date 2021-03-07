@@ -77,6 +77,39 @@ def addUser(user):
         db.session.commit()
     return newUser
 
+def getLeaderBoard():
+    from models import Player
+    query = Player.query.order_by(Player.points.desc())
+    leader = []
+    for p in query:
+        print(p)
+        leader.append( {"username":p.username, "points":p.points, "wins":p.wins, "losses":p.losses} )
+    return leader
+
+def applyWinner(win):
+    from models import Player
+    global x, o
+    if win == "X":
+        winner = x
+        loser = o
+    else:
+        winner = o
+        loser = x
+    print(x)
+    print(o)
+    p1 = Player.query.filter_by(username=winner).first()
+    p2 = Player.query.filter_by(username=loser).first()
+    p1.wins += 1
+    p2.losses += 1
+    p1.points = p1.points + 1
+    p2.points = p2.points - 1
+    db.session.merge(p1)
+    db.session.merge(p2)
+    db.session.commit()
+    print("Points", Player.query.filter_by(username=winner).first().points)
+    leader = getLeaderBoard()
+    socketio.emit('leaderboard', leader, broadcast=True, include_self=True)
+
 @app.route('/', defaults={"filename": "index.html"})
 @app.route('/<path:filename>')
 def index(filename):
@@ -91,11 +124,7 @@ def on_requestUserList(data):
 def on_requestLeader(data):
     from models import Player
     print("Leaderboard Requested")
-    query = Player.query.all()
-    leader = []
-    for p in query:
-        print(p)
-        leader.append( {"username":p.username, "points":p.points, "wins":p.wins, "losses":p.losses} )
+    leader = getLeaderBoard()
     socketio.emit('leaderboard', leader, to=data["id"], broadcast=False, include_self=True)
 
 # When a client connects from this Socket connection, this function is run
@@ -121,31 +150,14 @@ def on_connect():
 @socketio.on('board')
 def on_chat(data):
     from models import Player
-    global turn, board, x, o
+    global turn, board
     turn += 1
     board[data["num"]] = data["usr"]["xo"]
     print(board)
     win = checkWin()
     print(win)
     if win != False:
-        if win == "X":
-            winner = x
-            loser = o
-        else:
-            winner = o
-            loser = x
-        print(x)
-        print(o)
-        p1 = Player.query.filter_by(username=winner).first()
-        p2 = Player.query.filter_by(username=loser).first()
-        p1.wins += 1
-        p2.losses += 1
-        p1.points = p1.points + 1
-        p2.points = p2.points - 1
-        db.session.merge(p1)
-        db.session.merge(p2)
-        db.session.commit()
-        print("Points", Player.query.filter_by(username=winner).first().points)
+        applyWinner(win)
         socketio.emit('win', win, broadcast=True, include_self=True)
         print("winner signal emitted")
     if turn >= 9:
