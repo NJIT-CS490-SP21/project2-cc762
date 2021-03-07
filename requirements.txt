@@ -2,3 +2,4 @@ Flask
 Flask-SocketIO==5.0.1
 Flask-CORS
 Flask-SQLAlchemy
+python-dotenv
