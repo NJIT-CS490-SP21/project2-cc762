@@ -63,7 +63,7 @@ function App() {
             {isLoggedIn() && <div>You are: {usr[0]["name"]}, and are {usr[0]["xo"]}</div>}
             <LoginComponent addUsr={addUsr}/>
             <UserListComponent allUsrs={allUsrs}/>
-            <LeaderboardComponent/>
+            <LeaderboardComponent usr={usr}/>
           </div>
         </div>
       </header>

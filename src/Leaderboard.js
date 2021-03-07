@@ -1,10 +1,11 @@
 import React from 'react';
+import './Leaderboard.css';
 import { useState, useRef, useEffect } from 'react';
 import io from 'socket.io-client';
 
 const socket = io(); // Connects to socket connection
 
-function LeaderboardComponent(){
+function LeaderboardComponent(props){
     const [leader, setLeader] = useState([]);
     const [show, setShow] = useState(false)
     
@@ -26,17 +27,18 @@ function LeaderboardComponent(){
     
     if(show)
     {
-    return (
-        <div class="outlined" onClick={swapShow}>Leaderboard
-        <div>
-        <table><tbody><tr><th>Player</th><th>Points</th><th>Wins</th><th>Losses</th></tr>
-        {leader.map((player, index) => <tr><th key={index}>{player.username}</th><th>{player.points}</th><th>{player.wins}</th><th>{player.losses}</th></tr>)}</tbody></table>
-        </div></div>
-        )
+        console.log(props.usr["name"])
+        return (
+            <div className="outlined" onClick={swapShow}>Leaderboard
+            <div>
+            <table><tbody><tr><th>Player</th><th>Points</th><th>Wins</th><th>Losses</th></tr>
+            {leader.map((player, index) => <tr className={ player.username === props.usr[0]["name"] ? "bold" : null}><th  key={index}>{player.username}</th><th>{player.points}</th><th>{player.wins}</th><th>{player.losses}</th></tr>)}</tbody></table>
+            </div></div>
+            )   
     }
     else
     {
-        return ( <div class="outlined" onClick={swapShow}>Leaderboard</div>)
+        return ( <div className="outlined" onClick={swapShow}>Leaderboard</div>)
     }
 }
 export default LeaderboardComponent;

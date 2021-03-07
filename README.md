@@ -16,7 +16,7 @@
 ## Deploy to Heroku
 1. Create a Heroku app: `heroku create --buildpack heroku/python`
 2. Add nodejs buildpack: `heroku buildpacks:add --index 1 heroku/nodejs`
-3. Push to Heroku: `git push heroku milestone_1`
+3. Push to Heroku: `git push heroku milestone_2:main`
 
 ## New Features:
 1. I would like to swap board storage to entierly server side, as it is more secure and less buggy(state cause a bug that took 2 hours and made my project late). This would be done almost exactly as I did the request for users(which are curently stored server side)
@@ -31,3 +31,4 @@ While I did not solve this myself at least I have a better understanding of stat
 After searching the documentation I found that the best way to do this is using rooms. Notably a socket will join a room to its unique id automaticall.
 I passed the 'socket.id' along in the data to the server and had the login signal send specifically to that ID.
 3. I am unable to `from models import Player` in the body of my app.py, as due to some weird interaction with flask db doesn't properly set up before models tries to access it. All functions using the player model now have `from models import Player` at the top as a temporary fix until I can find a better one
+4. There is a player with no username in the table. I need to remove it and prevent people from loggin in with an empty string
