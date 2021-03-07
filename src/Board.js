@@ -61,7 +61,7 @@ function BoardComponent(props){
     
     //key is set to get console to stop complaining
     //if(props.show())
-    if(true)
+    if(props.show())
     {
         return (
             <div>
