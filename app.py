@@ -2,8 +2,22 @@ import os
 from flask import Flask, send_from_directory, json, session
 from flask_socketio import SocketIO
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 app = Flask(__name__, static_folder='./build/static')
+
+# Point SQLAlchemy to your Heroku database
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# Gets rid of a warning
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+db.create_all()
+db.session.commit()
 
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -16,6 +30,8 @@ socketio = SocketIO(
 
 #Segment for handling the users
 users = []
+x = None
+o = None
 #server side turn var
 turn = 0;
 board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
@@ -44,14 +60,21 @@ def checkWin():
 
 
 def addUser(user):
+    global x, o
+    from models import Player
     if(len(users) == 0):
         tile = "X"
+        x = user
     elif(len(users) == 1):
         tile = "O"
+        o = user
     else:
         tile = "Spectator"
     newUser = {"name": user, "xo": tile}
     users.append(newUser)
+    if(Player.query.filter_by(username=user).first() == None):
+        db.session.add(Player(username=user, points=100, wins=0, losses=0))
+        db.session.commit()
     return newUser
 
 @app.route('/', defaults={"filename": "index.html"})
@@ -60,9 +83,20 @@ def index(filename):
     return send_from_directory('./build', filename)
 
 @socketio.on("requestUserList")
-def on_requestUserList():
+def on_requestUserList(data):
     print("User List Requested")
-    socketio.emit("requestUserList", users, broadcast=False, include_self=False)#note the false broadcast, because we dont want everyone to update anytime someone asks for the list
+    socketio.emit('requestUserList', users, to=data["id"], broadcast=False, include_self=True)#note the false broadcast, because we dont want everyone to update anytime someone asks for the list
+
+@socketio.on("leaderboard")
+def on_requestLeader(data):
+    from models import Player
+    print("Leaderboard Requested")
+    query = Player.query.all()
+    leader = []
+    for p in query:
+        print(p)
+        leader.append( {"username":p.username, "points":p.points, "wins":p.wins, "losses":p.losses} )
+    socketio.emit('leaderboard', leader, to=data["id"], broadcast=False, include_self=True)
 
 # When a client connects from this Socket connection, this function is run
 @socketio.on('login')
@@ -86,15 +120,31 @@ def on_connect():
 # When a client emits the event 'board' to the server, this function is run
 @socketio.on('board')
 def on_chat(data):
-    global turn
+    from models import Player
+    global turn, board, x, o
     turn += 1
-    global board
     board[data["num"]] = data["usr"]["xo"]
     print(board)
     win = checkWin()
     print(win)
     if win != False:
+        if win == "X":
+            winner = x
+            loser = o
+        else:
+            winner = o
+            loser = x
+        print(x)
+        print(o)
+        p1 = Player.query.filter_by(username=winner).first()
+        p2 = Player.query.filter_by(username=loser).first()
+        p1.wins += 1
+        p2.losses -= 1
+        p1.points += 1
+        p2.points -=1
+        db.session.commit()
         socketio.emit('win', win, broadcast=True, include_self=True)
+        print("winner signal emitted")
     if turn >= 9:
         socketio.emit('win', "Draw", broadcast=True, include_self=True)
     data["turn"] = turn;
@@ -106,17 +156,19 @@ def on_chat(data):
 @socketio.on('reset')
 def on_reset():
     print("Resetting Game")
-    global board
-    board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
-    global users 
+    global board, users, turn, x, o
+    board = ["-", "-", "-", "-", "-", "-", "-", "-", "-"] 
     users = []
-    global turn
     turn = 0
+    x = None
+    o = None
     socketio.emit('reset', broadcast=True, include_self=True)
 
+# Note we need to add this line so we can import app in the python shell
+if __name__ == "__main__":
 # Note that we don't call app.run anymore. We call socketio.run with app arg
-socketio.run(
-    app,
-    host=os.getenv('IP', '0.0.0.0'),
-    port=8081 if os.getenv('C9_PORT') else int(os.getenv('PORT', 8081)),
-)
+    socketio.run(
+        app,
+        host=os.getenv('IP', '0.0.0.0'),
+        port=8081 if os.getenv('C9_PORT') else int(os.getenv('PORT', 8081)),
+    )

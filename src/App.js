@@ -2,6 +2,7 @@ import './App.css';
 import BoardComponent from './Board.js'
 import LoginComponent from './Login.js'
 import UserListComponent from './Users.js'
+import LeaderboardComponent from './Leaderboard.js'
 import { useState, useRef, useEffect } from 'react';
 import io from 'socket.io-client';
 
@@ -35,7 +36,7 @@ function App() {
   }
   
   function getAllUsr(){
-    socket.emit('requestUserList');
+    socket.emit('requestUserList', { id:socket.id });
   }
   
   function getUsr(){
@@ -62,6 +63,7 @@ function App() {
             {isLoggedIn() && <div>You are: {usr[0]["name"]}, and are {usr[0]["xo"]}</div>}
             <LoginComponent addUsr={addUsr}/>
             <UserListComponent allUsrs={allUsrs}/>
+            <LeaderboardComponent/>
           </div>
         </div>
       </header>
