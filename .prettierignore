@@ -1,0 +1,6 @@
+# Ignore artifacts:
+build
+__pycache__
+public
+sql.env
+.gitignore
