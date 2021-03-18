@@ -15,7 +15,8 @@ function App() {
   function getAllUsr() {
     socket.emit('requestUserList', { id: socket.id });
   }
-
+  
+  
   // Listener for login
   useEffect(() => {
     socket.on('updateUsers', (data) => {

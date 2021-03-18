@@ -1,11 +1,20 @@
-from app import db
+"""
+Layout for the Player table
+"""
+from app import DB
 
-class Player(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    points = db.Column(db.Integer, nullable=False)
-    wins = db.Column(db.Integer, nullable=False)
-    losses = db.Column(db.Integer, nullable=False)
-    
+class Player(DB.Model):
+    """
+    A player table
+    """
+    id = DB.Column(DB.Integer, primary_key=True)
+    username = DB.Column(DB.String(80), unique=True, nullable=False)
+    points = DB.Column(DB.Integer, nullable=False)
+    wins = DB.Column(DB.Integer, nullable=False)
+    losses = DB.Column(DB.Integer, nullable=False)
+
     def __repr__(self):
+        """
+        DOCSTRING
+        """
         return '<Player %r>' % self.username
